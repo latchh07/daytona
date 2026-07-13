@@ -1,0 +1,17 @@
+## Installing all libraries and dependencies 
+
+# Core async framework and validation
+fastapi 
+uvicorn 
+pydantic 
+
+# The local swap for Oxylabs (Browser Automation)
+playwright
+## playwright install  # Downloads the actual browser binaries (chromium, etc.)
+
+# The local swap for Kimi (LLM)
+openai
+
+# Database client
+supabase-py-async 
+python-dotenv 
