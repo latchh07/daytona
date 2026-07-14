@@ -1,0 +1,14 @@
+# os 
+asyncio 
+# json
+fastapi 
+pydantic 
+openai
+playwright
+dotenv
+playwright
+supabase-py-async 
+python-dotenv 
+
+
+
