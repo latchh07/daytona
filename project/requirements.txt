@@ -10,5 +10,8 @@ playwright
 supabase-py-async 
 python-dotenv 
 
+## after installing playwright, run this command in terminal to download new browser (Required for chromium)
+# playwright install 
+
 
 
