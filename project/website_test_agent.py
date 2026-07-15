@@ -56,13 +56,15 @@ async def run_naive_agent(target_url: str, objective: str):
         browser = await p.chromium.launch(headless=True, proxy=proxy_config)
         context = await browser.new_context(
                     viewport={"width": 1280, "height": 720},
-                    ignore_https_errors=True  
+                    ignore_https_errors=True,
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"  
                 )
+    
         page = await context.new_page()
         
         print(f"[Naive_agent] Navigating to target boundary: {target_url}")
         try:
-            await page.goto(target_url, timeout=30000)
+            await page.goto(target_url, timeout=60000, wait_until="domcontentloaded")
             await page.wait_for_load_state("networkidle")
             
             for step in range(max_steps):
@@ -138,7 +140,7 @@ async def run_naive_agent(target_url: str, objective: str):
 if __name__ == "__main__":
     # Test Scenario: Directing the agent to process a cancellation journey on a mock URL
     # Replace this with your deployed Vercel target or live URL (e.g., Figma onboarding steps)
-    target_test_url = "https://www.canva.com/settings/your-account" 
+    target_test_url = "https://www.adobe.com/sg/creativecloud/plans.html" 
     test_objective = "Locate the account pricing settings and navigate to the cancellation confirmation phase."
     
     print("=== STARTING NAIVE AGENT ISOLATION TEST ===")
