@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
-  display: 'swap',
+  display: "swap",
+  variable: "--font-serif",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  display: 'swap',
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
-  title: "Consumer Dashboard - Content Integrity Crash Test Engine",
-  description: "Monitoring and crash testing dashboard",
+  title: "Content Integrity Crash Test Engine",
+  description: "RAG poisoning trial dashboard — evidence log and hijack scoring",
 };
 
 export default function RootLayout({
@@ -24,13 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={`${inter.className} antialiased text-on-surface bg-background overflow-x-hidden min-h-screen`}>
+      <body
+        className={`${sourceSerif.variable} ${ibmPlexMono.variable} antialiased text-on-surface bg-background overflow-x-hidden min-h-screen`}
+      >
         {children}
       </body>
     </html>

@@ -1,55 +1,42 @@
-import Link from 'next/link';
-
 export default function SideNavBar() {
   return (
-    <nav className="fixed left-0 top-16 bottom-0 w-64 flex flex-col py-4 bg-surface-container-low border-r border-outline-variant z-40 transition-transform duration-200">
+    <aside className="fixed left-0 top-16 bottom-0 w-64 hidden lg:flex flex-col py-4 bg-surface-container-low border-r border-outline-variant z-40">
       <div className="px-4 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded bg-surface-variant border border-outline-variant flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary">engineering</span>
+            <span className="font-data-mono text-[11px] text-primary">CF</span>
           </div>
           <div>
-            <h2 className="font-body-md text-body-md font-bold text-primary">System Admin</h2>
-            <p className="font-label-caps text-label-caps text-error">Vigilance Level: High</p>
+            <h2 className="font-body-md text-body-md font-bold text-primary">Case Registry</h2>
+            <p className="font-label-caps text-label-caps text-marginalia">Local target agent</p>
           </div>
         </div>
       </div>
       
       <div className="flex-1 px-2 space-y-1">
-        <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors group">
-          <span className="material-symbols-outlined group-hover:text-primary">security</span>
-          <span className="font-label-caps text-label-caps">Enterprise Dash</span>
-        </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-container text-on-primary-container font-bold transition-colors">
-          <span className="material-symbols-outlined">public</span>
-          <span className="font-label-caps text-label-caps">Consumer Dash</span>
-        </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors group">
-          <span className="material-symbols-outlined group-hover:text-primary">database</span>
-          <span className="font-label-caps text-label-caps">Knowledge Base</span>
-        </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors group">
-          <span className="material-symbols-outlined group-hover:text-primary">terminal</span>
-          <span className="font-label-caps text-label-caps">System Logs</span>
-        </Link>
+        <a href="#run-trial" className="flex items-center gap-3 px-3 py-2 rounded bg-primary-container text-on-primary-container font-bold">
+          <span className="font-data-mono text-[11px]">01</span>
+          <span className="font-label-caps text-label-caps">Run Trial</span>
+        </a>
+        <a href="#trial-history" className="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant hover:bg-surface-variant transition-colors group">
+          <span className="font-data-mono text-[11px] group-hover:text-primary">02</span>
+          <span className="font-label-caps text-label-caps">Trial History</span>
+        </a>
+        <a href="#trial-detail" className="flex items-center gap-3 px-3 py-2 rounded text-on-surface-variant hover:bg-surface-variant transition-colors group">
+          <span className="font-data-mono text-[11px] group-hover:text-primary">03</span>
+          <span className="font-label-caps text-label-caps">Evidence Viewer</span>
+        </a>
       </div>
       
       <div className="px-4 mt-auto mb-4">
-        <button className="w-full py-2 bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded font-bold hover:opacity-90 transition-opacity">
-          Initialize Test
-        </button>
+        <p className="font-data-mono text-data-mono text-[11px] text-marginalia leading-relaxed">
+          Resistance scores measure whether retrieved content altered the agent&apos;s intended behavior.
+        </p>
       </div>
       
-      <div className="px-2 space-y-1 border-t border-outline-variant pt-2">
-        <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors">
-          <span className="material-symbols-outlined">settings</span>
-          <span className="font-label-caps text-label-caps">Settings</span>
-        </Link>
-        <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-variant transition-colors">
-          <span className="material-symbols-outlined">help</span>
-          <span className="font-label-caps text-label-caps">Support</span>
-        </Link>
+      <div className="px-4 border-t border-outline-variant pt-3 font-label-caps text-label-caps text-marginalia">
+        Forensic workspace / v1
       </div>
-    </nav>
+    </aside>
   );
 }
