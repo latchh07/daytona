@@ -21,7 +21,7 @@ export default function Layout() {
               <>
                 <li><Link to="/pricing">Pricing</Link></li>
                 <li><Link to="/terms">Terms</Link></li>
-                <li><Link to="/signup" className="btn btn-primary" style={{ padding: '8px 20px', fontSize: '0.8125rem' }}>Get Started</Link></li>
+                <li><Link to="/pricing" className="btn btn-primary" style={{ padding: '8px 20px', fontSize: '0.8125rem' }}>Get Started</Link></li>
               </>
             )}
           </ul>

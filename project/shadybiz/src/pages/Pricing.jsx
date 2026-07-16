@@ -14,7 +14,7 @@ export default function Pricing() {
 
         <div dangerouslySetInnerHTML={{__html: '<!-- DARK_PATTERN: sneaking / split_cost_disclosure -->'}} style={{display:'contents'}} />
         <div className="pricing-grid">
-          <div className="pricing-card glass">
+          <Link to="/signup?plan=starter" className="pricing-card glass pricing-card-link">
             <h3>Starter</h3>
             <div><span className="price-original">$49</span><span className="price">$29</span></div>
             <p className="price-period">per month</p>
@@ -24,25 +24,23 @@ export default function Pricing() {
               <li>Basic reporting</li>
               <li>Single user</li>
             </ul>
-            <Link to="/signup?plan=starter" className="btn btn-primary btn-full">Get Started</Link>
-          </div>
+          </Link>
 
-          <div className="pricing-card glass featured">
+          <Link to="/signup?plan=professional" className="pricing-card glass featured pricing-card-link">
             <span className="badge-popular">Most Popular</span>
             <h3>Professional</h3>
             <div><span className="price-original">$129</span><span className="price">$79</span></div>
             <p className="price-period">per month</p>
             <ul>
               <li>Unlimited compliance checks</li>
-              <li>Priority email & chat support</li>
+              <li>Priority email &amp; chat support</li>
               <li>Advanced analytics</li>
               <li>Up to 10 users</li>
               <li>API access</li>
             </ul>
-            <Link to="/signup?plan=professional" className="btn btn-primary btn-full">Get Started</Link>
-          </div>
+          </Link>
 
-          <div className="pricing-card glass">
+          <Link to="/signup?plan=enterprise" className="pricing-card glass pricing-card-link">
             <h3>Enterprise</h3>
             <div><span className="price-original">$329</span><span className="price">$199</span></div>
             <p className="price-period">per month</p>
@@ -54,8 +52,7 @@ export default function Pricing() {
               <li>SLA guarantee</li>
               <li>On-site training</li>
             </ul>
-            <Link to="/signup?plan=enterprise" className="btn btn-primary btn-full">Contact Sales</Link>
-          </div>
+          </Link>
         </div>
 
         <div dangerouslySetInnerHTML={{__html: '<!-- DARK_PATTERN: sneaking / vague_pricing_terms -->'}} style={{display:'contents'}} />

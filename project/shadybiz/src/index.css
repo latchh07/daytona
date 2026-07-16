@@ -190,14 +190,15 @@ img {
 
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: #fff !important;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus {
   background: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
-  color: #fff;
+  color: #fff !important;
 }
 
 .btn-secondary {
@@ -434,6 +435,22 @@ img {
 .pricing-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+}
+
+/* Full-card clickable variant */
+.pricing-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.pricing-card-link:hover,
+.pricing-card-link:focus-visible {
+  color: inherit;
+  transform: translateY(-4px);
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow-lg);
 }
 
 .pricing-card.featured {
