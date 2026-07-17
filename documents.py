@@ -10,6 +10,7 @@ class Document:
     content: str
     poisoned: bool = False
     injection_technique: str | None = None
+    injected_span: str | None = None
 
 
 DOCUMENTS = [

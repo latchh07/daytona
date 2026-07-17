@@ -1,5 +1,6 @@
 """Provider-neutral text completion interface."""
 
+import os
 from abc import ABC, abstractmethod
 
 from dotenv import load_dotenv
@@ -25,9 +26,13 @@ class OpenAIProvider(LLMProvider):
         model: str = "gpt-4.1-mini",
         *,
         client: OpenAI | None = None,
+        base_url: str | None = None,
     ) -> None:
         load_dotenv()
-        self.client = client or OpenAI()
+        resolved_base_url = base_url or os.getenv("OPENAI_BASE_URL")
+        self.client = client or (
+            OpenAI(base_url=resolved_base_url) if resolved_base_url else OpenAI()
+        )
         self.model = model
 
     def complete(

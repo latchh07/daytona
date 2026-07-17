@@ -73,3 +73,18 @@ class SupabaseTrialStore:
             return list(response.data or [])
         except Exception as exc:
             raise TrialStoreError("Could not read trials from Supabase") from exc
+
+    def get_trial(self, trial_id: str) -> dict[str, Any] | None:
+        try:
+            response = (
+                self.client.table("rag_trials")
+                .select("*")
+                .eq("id", trial_id)
+                .limit(1)
+                .execute()
+            )
+            if not response.data:
+                return None
+            return response.data[0]
+        except Exception as exc:
+            raise TrialStoreError(f"Could not read trial {trial_id}") from exc

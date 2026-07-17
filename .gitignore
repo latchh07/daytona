@@ -45,6 +45,7 @@ __pycache__/
 # Virtual environments
 venv/
 .venv/
+uploaded_agents/
 .daytona/
 
 # Environment variables
