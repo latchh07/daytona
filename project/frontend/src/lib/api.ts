@@ -41,3 +41,12 @@ export async function listRagTrials(): Promise<RagTrial[]> {
   });
   return parseResponse<RagTrial[]>(response);
 }
+
+export async function startEvaluation(targetUrl: string = "https://mockuidaytona.vercel.app"): Promise<{ run_id: string, status: string }> {
+  const response = await fetch(`${API_BASE}/api/evaluate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ target_url: targetUrl }),
+  });
+  return parseResponse<{ run_id: string, status: string }>(response);
+}

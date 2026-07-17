@@ -16,8 +16,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Content Integrity Crash Test Engine",
-  description: "RAG poisoning trial dashboard — evidence log and hijack scoring",
+  title: "Web Manipulation Engine — Agent Safety Dashboard",
+  description: "Monitoring and crash testing dashboard",
 };
 
 export default function RootLayout({
