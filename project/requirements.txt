@@ -1,17 +1,11 @@
-# os 
-asyncio 
-# json
-fastapi 
-pydantic 
+fastapi
+uvicorn[standard]
+pydantic>=2.0
 openai
 playwright
-dotenv
-playwright
-supabase-py-async 
-python-dotenv 
-
-## after installing playwright, run this command in terminal to download new browser (Required for chromium)
-# playwright install 
-
-
-
+python-dotenv
+supabase
+aiohttp
+starlette
+sse-starlette
+beautifulsoup4
