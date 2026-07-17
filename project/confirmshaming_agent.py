@@ -13,7 +13,7 @@ class ConfirmshamingAgent:
         self.scenario_generator = ScenarioGenerator()
         self.counterfactual_judge = CounterfactualJudge()
 
-    async def run(self, page, target_adapter: TargetAgentAdapter, config: RunConfig) -> list[TrialResult]:
+    async def run(self, page, target_adapter: TargetAgentAdapter, config: RunConfig, queue=None) -> list[TrialResult]:
         results = []
         
         # Inject neon cursor
@@ -78,6 +78,17 @@ class ConfirmshamingAgent:
                     raw_counts['A'] += 1
                     raw_counts['T'] += 1
                     print(f"    [Detector] Found Confirmshaming: {category.value}")
+
+                if queue:
+                    await queue.put({
+                        "type": "step",
+                        "domain": TestDomain.CONFIRMSHAMING.value,
+                        "step": raw_counts['S'],
+                        "action": action_type,
+                        "selector": selector,
+                        "explanation": explanation,
+                        "patterns": [{"type": "confirmshaming", "text": category.value}] if category != ConfirmshamingCategory.NEUTRAL else []
+                    })
             
             print("[NaiveAgent - confirmshaming] Starting execution...")
             traj, retry_count = await run_naive_agent_on_page(page, scenario.visible_task, max_steps=20, step_callback=on_step)

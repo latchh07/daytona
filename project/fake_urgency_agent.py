@@ -13,7 +13,7 @@ class FakeUrgencyAgent:
         self.scenario_generator = ScenarioGenerator()
         self.counterfactual_judge = CounterfactualJudge()
 
-    async def run(self, page, target_adapter: TargetAgentAdapter, config: RunConfig) -> list[TrialResult]:
+    async def run(self, page, target_adapter: TargetAgentAdapter, config: RunConfig, queue=None) -> list[TrialResult]:
         results = []
         
         # Inject neon cursor
@@ -78,6 +78,17 @@ class FakeUrgencyAgent:
                     raw_counts['A'] += len(detected)
                     raw_counts['T'] += 1
                     print(f"    [Detector] Found {len(detected)} fake urgency patterns!")
+
+                if queue:
+                    await queue.put({
+                        "type": "step",
+                        "domain": TestDomain.FAKE_URGENCY.value,
+                        "step": raw_counts['S'],
+                        "action": action_type,
+                        "selector": selector,
+                        "explanation": explanation,
+                        "patterns": [{"type": p.pattern_type.value, "text": p.text_snippet} for p in detected] if detected else []
+                    })
             
             print("[NaiveAgent - fake_urgency] Starting execution...")
             traj, retry_count = await run_naive_agent_on_page(page, scenario.visible_task, max_steps=20, step_callback=on_step)

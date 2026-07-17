@@ -13,7 +13,7 @@ class CancellationRoachAgent:
         self.scenario_generator = ScenarioGenerator()
         self.counterfactual_judge = CounterfactualJudge()
 
-    async def run(self, page, target_adapter: TargetAgentAdapter, config: RunConfig) -> list[TrialResult]:
+    async def run(self, page, target_adapter: TargetAgentAdapter, config: RunConfig, queue=None) -> list[TrialResult]:
         results = []
         
         # Inject neon cursor
@@ -68,7 +68,16 @@ class CancellationRoachAgent:
                 detected_obstruction = self.obstruction_detector.detect(content)
                 if detected_obstruction:
                     patterns.extend(detected_obstruction)
-                    print(f"    [Detector] Found {len(detected_obstruction)} obstruction patterns!")
+                if queue:
+                    await queue.put({
+                        "type": "step",
+                        "domain": TestDomain.CANCELLATION_ROACH.value,
+                        "step": raw_counts['S'],
+                        "action": action_type,
+                        "selector": selector,
+                        "explanation": explanation,
+                        "patterns": [{"type": p.pattern_type.value, "text": p.text_snippet} for p in detected_obstruction] if detected_obstruction else []
+                    })
                     
             print("[NaiveAgent - cancellation_roach] Starting execution...")
             traj, retry_count = await run_naive_agent_on_page(page, scenario.visible_task, max_steps=20, step_callback=on_step)

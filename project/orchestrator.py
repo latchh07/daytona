@@ -84,7 +84,7 @@ async def execute_run(run_id: str, config: RunConfig):
             agent = AgentClass()
             
             await queue.put({"type": "status", "domain": domain.value, "status": "started"})
-            results = await agent.run(page, adapter, config)
+            results = await agent.run(page, adapter, config, queue)
             await queue.put({"type": "status", "domain": domain.value, "status": "completed"})
             
             await context.close()
