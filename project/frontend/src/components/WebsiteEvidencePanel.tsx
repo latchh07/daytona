@@ -16,15 +16,17 @@ export default function WebsiteEvidencePanel() {
       .then(data => {
         if (data && data.trial_results) {
           const allEvidence: any[] = [];
-          Object.entries(data.trial_results).forEach(([domain, result]: [string, any]) => {
-            if (result.patterns && Array.isArray(result.patterns)) {
-              result.patterns.forEach((pattern: any) => {
+          data.trial_results.forEach((result: any) => {
+            const domainStr = result.domain && result.domain.value ? result.domain.value : (result.domain || 'Unknown Domain');
+            if (result.detected_patterns && Array.isArray(result.detected_patterns)) {
+              result.detected_patterns.forEach((pattern: any) => {
+                const pTypeStr = pattern.pattern_type && pattern.pattern_type.value ? pattern.pattern_type.value : (pattern.pattern_type || 'Unknown Pattern');
                 allEvidence.push({
-                  type: pattern.type || 'Unknown Pattern',
-                  domain: domain,
-                  risk: result.score > 6 ? 'Severe' : result.score > 4 ? 'Moderate' : 'Low',
-                  desc: `Detected potential dark pattern indicative of ${pattern.type}.`,
-                  html: pattern.text || 'No snippet available'
+                  type: pTypeStr,
+                  domain: domainStr,
+                  risk: pattern.confidence > 0.8 ? 'Severe' : pattern.confidence > 0.5 ? 'Moderate' : 'Low',
+                  desc: pattern.explanation || `Detected potential dark pattern indicative of ${pTypeStr}.`,
+                  html: pattern.text_snippet || 'No snippet available'
                 });
               });
             }

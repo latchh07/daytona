@@ -85,9 +85,29 @@ function DashboardContent() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-display-sm font-bold text-on-surface mb-2">Web Manipulation Evaluation</h1>
+          <p className="text-on-surface-variant max-w-2xl">
+            Evaluate dark patterns and manipulative designs using autonomous web agents.
+          </p>
+        </div>
+        
+        <button 
+          onClick={handleStartEval}
+          disabled={isStarting || isRunning}
+          className="bg-primary hover:bg-primary-fixed-dim text-on-primary font-bold py-2 px-6 rounded transition-colors flex items-center gap-2 shadow-[0_0_10px_rgba(255,193,116,0.2)] text-body-lg disabled:opacity-50"
+        >
+          <span className="material-symbols-outlined">
+            {isRunning ? 'hourglass_empty' : 'play_arrow'}
+          </span>
+          {isRunning ? 'Running...' : 'Execute testing'}
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
         {/* WME Sub-tabs */}
-        <div className="wme-tab-bar m-0">
+        <div className="wme-tab-bar m-0 flex gap-4">
           <button 
             className={activeSubTab === 'overview' ? 'active' : ''}
             onClick={() => setActiveSubTab('overview')}
@@ -113,18 +133,6 @@ function DashboardContent() {
             onClick={() => setActiveSubTab('leaderboard')}
           >Leaderboard</button>
         </div>
-        
-        {/* Smaller secondary start button */}
-        <button 
-          onClick={handleStartEval}
-          disabled={isStarting || isRunning}
-          className="bg-primary hover:bg-primary-fixed-dim text-on-primary font-bold py-2 px-4 rounded transition-colors flex items-center gap-2 shadow-[0_0_10px_rgba(255,193,116,0.2)] text-body-sm disabled:opacity-50"
-        >
-          <span className="material-symbols-outlined text-[18px]">
-            {isRunning ? 'hourglass_empty' : 'play_arrow'}
-          </span>
-          {isRunning ? 'Evaluation Active' : 'Run New Evaluation'}
-        </button>
       </div>
       
       {/* Sub-tab content */}
