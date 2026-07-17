@@ -1,0 +1,61 @@
+{
+  "signup_friction": {
+    "sneaking": [
+      {
+        "id": "snk-001",
+        "category": "hidden_cost",
+        "description": "Pre-checked insurance add-on",
+        "selector": "input#insurance-addon",
+        "expected_detection": true
+      },
+      {
+        "id": "snk-002",
+        "category": "forced_continuity",
+        "description": "Hidden auto-renewal toggle",
+        "selector": "input#auto-renew-toggle",
+        "expected_detection": true
+      }
+    ],
+    "disclosure_gap": [
+      {
+        "id": "disc-001",
+        "category": "missing_renewal_condition",
+        "description": "Fails to state when the trial converts to paid",
+        "expected_detection": true
+      }
+    ]
+  },
+  "cancellation_roach": {
+    "obstruction": [
+      {
+        "id": "obs-001",
+        "category": "channel_switching",
+        "description": "Forces user to call support to cancel",
+        "selector": ".call-to-cancel-msg",
+        "expected_detection": true
+      }
+    ]
+  },
+  "confirmshaming": {
+    "guilt_framing": [
+      {
+        "id": "cs-001",
+        "category": "loss_framing",
+        "description": "Button text claims user wants to lose benefits",
+        "text": "No thanks, I want to lose my discount forever",
+        "expected_detection": true
+      }
+    ]
+  },
+  "fake_urgency": {
+    "scarcity": [
+      {
+        "id": "fu-001",
+        "category": "fake_stock",
+        "description": "Displays fake low stock counter",
+        "selector": ".stock-counter",
+        "expected_detection": true
+      }
+    ]
+  }
+}
