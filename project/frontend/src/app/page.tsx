@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import TopNavBar from '@/components/TopNavBar';
-import SideNavBar from '@/components/SideNavBar';
 import Footer from '@/components/Footer';
 import { WMEProvider, useWME } from '@/components/WMEContext';
 import OverallPanel from '@/components/OverallPanel';
@@ -18,44 +17,122 @@ import ReplayViewer from "@/components/ReplayViewer";
 import type { RagTrial } from "@/lib/types";
 
 function DashboardContent() {
-  const { activeSubTab, setActiveSubTab } = useWME();
-  
+  const { activeSubTab, setActiveSubTab, evaluationRunId, isRunning, setEvaluationRunId, setIsRunning } = useWME();
+  const [isStarting, setIsStarting] = useState(false);
+
+  const handleStartEval = async () => {
+    try {
+      setIsStarting(true);
+      const { startEvaluation } = await import('@/lib/api');
+      const data = await startEvaluation("https://mockuidaytona.vercel.app");
+      setEvaluationRunId(data.run_id || "active_run");
+      setIsRunning(true);
+      setActiveSubTab('sandbox');
+    } catch (err) {
+      console.error(err);
+      alert("Failed to start evaluation");
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
+  // If no run has been started and none is active, show the splash screen
+  if (!evaluationRunId && !isRunning && !isStarting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
+        <div className="text-center">
+          <h2 className="text-headline-lg font-bold text-on-surface mb-2">Web Manipulation Engine</h2>
+          <p className="text-on-surface-variant max-w-lg mx-auto">Start a new evaluation to analyze a target website against manipulation patterns like Confirmshaming, Fake Urgency, Obstruction, and Sneaking.</p>
+        </div>
+        <button 
+          onClick={handleStartEval}
+          className="w-[280px] h-[280px] rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative"
+          style={{
+            backgroundColor: '#FFC107',
+            border: '15px solid #4a3800',
+            boxShadow: '0 0 0 15px #b78a00 inset, 0 0 60px rgba(255,193,7,0.3)',
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <div 
+              style={{
+                width: 0,
+                height: 0,
+                borderTop: '25px solid transparent',
+                borderBottom: '25px solid transparent',
+                borderLeft: '40px solid #D84315',
+              }}
+            ></div>
+            <div className="flex flex-col text-black font-black text-4xl leading-[1.1] text-left">
+              <span>Start</span>
+              <span>Evaluation</span>
+            </div>
+          </div>
+        </button>
+      </div>
+    );
+  }
+
+  // If loading the initial start
+  if (isStarting) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <span className="material-symbols-outlined text-[48px] text-primary animate-spin">autorenew</span>
+        <h2 className="text-headline-md text-on-surface">Initializing Agents...</h2>
+      </div>
+    );
+  }
+
   return (
     <>
-      {/* WME Sub-tabs */}
-      <div className="wme-tab-bar">
+      <div className="flex items-center justify-between mb-4">
+        {/* WME Sub-tabs */}
+        <div className="wme-tab-bar m-0">
+          <button 
+            className={activeSubTab === 'overview' ? 'active' : ''}
+            onClick={() => setActiveSubTab('overview')}
+          >Overview</button>
+          <button 
+            className={activeSubTab === 'sandbox' ? 'active' : ''}
+            onClick={() => setActiveSubTab('sandbox')}
+          >Sandbox View</button>
+          <button 
+            className={activeSubTab === 'agent-feedback' ? 'active' : ''}
+            onClick={() => setActiveSubTab('agent-feedback')}
+          >Agent Feedback</button>
+          <button 
+            className={activeSubTab === 'website-evidence' ? 'active' : ''}
+            onClick={() => setActiveSubTab('website-evidence')}
+          >Website Evidence</button>
+          <button 
+            className={activeSubTab === 'history' ? 'active' : ''}
+            onClick={() => setActiveSubTab('history')}
+          >Run History</button>
+          <button 
+            className={activeSubTab === 'leaderboard' ? 'active' : ''}
+            onClick={() => setActiveSubTab('leaderboard')}
+          >Leaderboard</button>
+        </div>
+        
+        {/* Smaller secondary start button */}
         <button 
-          className={activeSubTab === 'overview' ? 'active' : ''}
-          onClick={() => setActiveSubTab('overview')}
-        >Overview</button>
-        <button 
-          className={activeSubTab === 'sandbox' ? 'active' : ''}
-          onClick={() => setActiveSubTab('sandbox')}
-        >Sandbox View</button>
-        <button 
-          className={activeSubTab === 'evidence' ? 'active' : ''}
-          onClick={() => setActiveSubTab('evidence')}
-        >Evidence & Feedback</button>
-        <button 
-          className={activeSubTab === 'history' ? 'active' : ''}
-          onClick={() => setActiveSubTab('history')}
-        >Run History</button>
-        <button 
-          className={activeSubTab === 'leaderboard' ? 'active' : ''}
-          onClick={() => setActiveSubTab('leaderboard')}
-        >Leaderboard</button>
+          onClick={handleStartEval}
+          disabled={isStarting || isRunning}
+          className="bg-primary hover:bg-primary-fixed-dim text-on-primary font-bold py-2 px-4 rounded transition-colors flex items-center gap-2 shadow-[0_0_10px_rgba(255,193,116,0.2)] text-body-sm disabled:opacity-50"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            {isRunning ? 'hourglass_empty' : 'play_arrow'}
+          </span>
+          {isRunning ? 'Evaluation Active' : 'Run New Evaluation'}
+        </button>
       </div>
       
       {/* Sub-tab content */}
       <div className="mt-6">
         {activeSubTab === 'overview' && <OverallPanel />}
         {activeSubTab === 'sandbox' && <SandboxView />}
-        {activeSubTab === 'evidence' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <DeveloperFeedbackPanel />
-            <WebsiteEvidencePanel />
-          </div>
-        )}
+        {activeSubTab === 'agent-feedback' && <DeveloperFeedbackPanel />}
+        {activeSubTab === 'website-evidence' && <WebsiteEvidencePanel />}
         {activeSubTab === 'history' && <RunComparison />}
         {activeSubTab === 'leaderboard' && <WMEPublicLeaderboard />}
       </div>
@@ -78,9 +155,8 @@ export default function Home() {
   return (
     <WMEProvider>
       <TopNavBar />
-      <SideNavBar />
       
-      <main className="ml-64 pt-16 pb-8 px-margin-page min-h-screen">
+      <main className="pt-16 pb-8 px-margin-page min-h-screen">
         {/* Main Tab Bar */}
         <div className="wme-tab-bar mb-4">
           <button 

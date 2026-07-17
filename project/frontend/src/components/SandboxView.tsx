@@ -7,35 +7,35 @@ export default function SandboxView() {
   const [agents, setAgents] = useState<any>({
     signup_friction: {
       agentName: 'SignupFrictionAgent',
+      agentFileName: 'signup_friction_agent',
       cursorColor: 'var(--color-cursor-signup)',
       status: 'pending',
       stepCount: 0,
-      steps: [],
-      patterns: []
+      steps: []
     },
     cancellation_roach: {
       agentName: 'CancellationRoachAgent',
+      agentFileName: 'cancellation_roach_agent',
       cursorColor: 'var(--color-cursor-cancellation)',
       status: 'pending',
       stepCount: 0,
-      steps: [],
-      patterns: []
+      steps: []
     },
     confirmshaming: {
       agentName: 'ConfirmshamingAgent',
+      agentFileName: 'confirmshaming_agent',
       cursorColor: 'var(--color-cursor-confirmshaming)',
       status: 'pending',
       stepCount: 0,
-      steps: [],
-      patterns: []
+      steps: []
     },
     fake_urgency: {
       agentName: 'FakeUrgencyAgent',
+      agentFileName: 'fake_urgency_agent',
       cursorColor: 'var(--color-cursor-urgency)',
       status: 'pending',
       stepCount: 0,
-      steps: [],
-      patterns: []
+      steps: []
     }
   });
 
@@ -62,17 +62,13 @@ export default function SandboxView() {
             updated[domain].status = data.status === 'started' ? 'running' : 'completed';
           } else if (data.type === 'step') {
             updated[domain].stepCount = data.step;
-            // Only add if it's a new step or we just push it
             updated[domain].steps = [...updated[domain].steps, {
               step: data.step,
               action: data.action,
               selector: data.selector,
-              explanation: data.explanation
+              explanation: data.explanation,
+              patterns: data.patterns || []
             }];
-            if (data.patterns && data.patterns.length > 0) {
-               // Merge patterns
-               updated[domain].patterns = [...updated[domain].patterns, ...data.patterns];
-            }
           }
           return updated;
         });
@@ -93,7 +89,7 @@ export default function SandboxView() {
   );
 }
 
-function SandboxCard({ agentName, cursorColor, status, stepCount, steps, patterns }: any) {
+function SandboxCard({ agentName, agentFileName, cursorColor, status, stepCount, steps }: any) {
   return (
     <div className="card rounded-lg overflow-hidden flex flex-col h-[500px]">
       {/* Header */}
@@ -101,9 +97,12 @@ function SandboxCard({ agentName, cursorColor, status, stepCount, steps, pattern
         {status === 'running' && (
            <div className="absolute bottom-0 left-0 h-1 bg-primary animate-pulse" style={{ width: '100%' }}></div>
         )}
-        <div className="flex items-center gap-3">
-          <span className="neon-dot" style={{ color: cursorColor }}></span>
-          <h3 className="font-headline-sm text-primary">{agentName}</h3>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <span className="neon-dot" style={{ color: cursorColor }}></span>
+            <h3 className="font-headline-sm text-primary">{agentName}</h3>
+          </div>
+          <span className="text-xs font-data-mono text-marginalia ml-6">Controlled by: {agentFileName}</span>
         </div>
         <div className="flex items-center gap-4">
           <span className="font-data-mono text-data-mono text-on-surface-variant">{stepCount} steps</span>
@@ -114,34 +113,37 @@ function SandboxCard({ agentName, cursorColor, status, stepCount, steps, pattern
       </div>
       
       <div className="flex-1 flex flex-col p-4 overflow-y-auto">
-        {/* Patterns */}
-        {patterns.length > 0 && (
-          <div className="mb-6">
-            <h4 className="text-label-caps text-outline mb-2">DETECTED PATTERNS</h4>
-            <div className="flex flex-col gap-2">
-              {patterns.map((p: any, i: number) => (
-                <div key={i} className="bg-error-container/20 border border-error/30 p-2 rounded flex justify-between text-sm">
-                  <span className="text-error">{p.type}</span>
-                  <span className="text-on-surface truncate ml-4 max-w-[200px]" title={p.text}>{p.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Actions */}
         <div className="flex-1">
           <h4 className="text-label-caps text-outline mb-2">ACTION TRACE</h4>
           <div className="flex flex-col gap-2">
             {steps.length === 0 && <div className="text-on-surface-variant text-sm italic">Waiting for actions...</div>}
             {steps.map((step: any, i: number) => (
-              <div key={i} className="flex items-start gap-3 text-sm border-l-2 border-outline-variant pl-3 pb-3 relative">
+              <div key={i} className="flex flex-col gap-2 text-sm border-l-2 border-outline-variant pl-3 pb-3 relative">
                 <div className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full bg-outline-variant"></div>
-                <div className="min-w-[60px] font-data-mono text-outline">#{step.step}</div>
-                <div>
-                  <div className="text-on-surface font-medium">{step.action}</div>
-                  <div className="text-on-surface-variant font-data-mono text-xs mt-1 truncate max-w-[250px]" title={step.selector}>{step.selector}</div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="min-w-[60px] font-data-mono text-outline">#{step.step}</div>
+                  <div>
+                    <div className="text-on-surface font-medium">{step.action}</div>
+                    <div className="text-on-surface-variant font-data-mono text-xs mt-1 truncate max-w-[250px]" title={step.selector}>{step.selector}</div>
+                  </div>
                 </div>
+
+                {/* Inline Patterns */}
+                {step.patterns && step.patterns.length > 0 && (
+                  <div className="ml-[72px] mt-2 flex flex-col gap-1">
+                    {step.patterns.map((p: any, pIdx: number) => (
+                      <div key={pIdx} className="bg-error-container/20 border border-error/30 p-2 rounded flex flex-col gap-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[14px] text-error">warning</span>
+                          <span className="text-error font-bold text-xs uppercase">{p.type} INJECTED</span>
+                        </div>
+                        <span className="text-on-surface text-xs" title={p.text}>{p.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

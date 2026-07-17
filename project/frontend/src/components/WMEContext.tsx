@@ -1,7 +1,7 @@
 'use client';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type SubTab = 'overview' | 'sandbox' | 'evidence' | 'history' | 'leaderboard';
+export type SubTab = 'overview' | 'sandbox' | 'agent-feedback' | 'website-evidence' | 'history' | 'leaderboard';
 
 interface WMEState {
   activeSubTab: SubTab;
