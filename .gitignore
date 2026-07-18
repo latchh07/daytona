@@ -63,3 +63,7 @@ uploaded_agents/
 build/
 dist/
 *.egg-info/
+
+# Daytona / Devcontainer
+DAYTONA/
+.devcontainer/
