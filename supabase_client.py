@@ -25,6 +25,12 @@ class SupabaseTrialStore:
                 raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set")
             client = create_client(url, key)
         self.client = client
+        try:
+            client.table("rag_trials").select("*").limit(1).execute()
+        except Exception as exc:
+            raise RuntimeError(
+                "Supabase table 'rag_trials' is unreachable or missing — check SUPABASE_URL, SUPABASE_KEY, and that the table exists."
+            ) from exc
 
     def create_trial(self, values: dict[str, Any]) -> dict[str, Any]:
         try:
