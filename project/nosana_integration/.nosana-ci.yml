@@ -1,0 +1,14 @@
+nosana:
+  description: Web Manipulation Evaluation Grid Runner
+global:
+  image: registry.hub.docker.com/latchh07/daytona-agent-eval:latest
+  environment:
+    OPENAI_API_KEY: \${OPENAI_API_KEY}
+    ANDAI_API_KEY: \${ANDAI_API_KEY}
+jobs:
+  - name: run-trial
+    environment:
+      TARGET_AGENT: \${TARGET_AGENT}
+      TARGET_URL: \${TARGET_URL}
+    commands:
+      - python3 project/nosana_integration/nosana_job.py --agent $TARGET_AGENT --url $TARGET_URL
