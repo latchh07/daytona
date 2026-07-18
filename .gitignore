@@ -1,3 +1,4 @@
+@"
 # dependencies
 /node_modules
 /.pnp
@@ -28,8 +29,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.*
 
 # vercel
 .vercel
@@ -48,22 +50,18 @@ venv/
 uploaded_agents/
 .daytona/
 
-# Environment variables
-.env
-.env.*
-
 # IDE settings
 .vscode/
 .idea/
-
-# OS files
-.DS_Store
 
 # Build artifacts
 build/
 dist/
 *.egg-info/
 
-# Daytona / Devcontainer
-DAYTONA/
-.devcontainer/
+# scratch/debug files
+body.json
+server_stderr.log
+test_daytona_direct.py
+test_http_api.py
+"@ | Set-Content -Path .gitignore -Encoding utf8

@@ -158,6 +158,12 @@ export default function Home() {
   function handleTrialComplete(trial: RagTrial) {
     setSelectedTrial(trial);
     setHistoryRefreshKey((key) => key + 1);
+    // Scroll the breakdown panel into view — it lives below the fold and the
+    // section has id="trial-detail" with scroll-mt-20 for sticky-nav clearance.
+    // Use requestAnimationFrame so React has committed the new state before we scroll.
+    requestAnimationFrame(() => {
+      document.getElementById("trial-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
   return (

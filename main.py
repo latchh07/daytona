@@ -2,6 +2,8 @@
 
 import asyncio
 from contextlib import asynccontextmanager
+import logging
+import traceback
 from typing import Any
 from uuid import uuid4
 
@@ -9,11 +11,19 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+import os
+from dotenv import load_dotenv
+
+# Load .env before any os.getenv() flag reads so flags like LLM_PROVIDER and
+# USE_SANDBOXED_DETECTION reflect what is actually in .env, not just shell env.
+load_dotenv()
+
 from agent_profiler import AgentProfiler
 from documents import Document
 from document_generator import DocumentGenerator
-from injection_detector import InjectionDetector
+from injection_detector import DETECTOR_SYSTEM_PROMPT, InjectionDetector
 from judge import Judge
+from kimi_client import KimiProvider
 from llm_client import OpenAIProvider
 from parallel_executor import LocalExecutor, ParallelExecutor
 from retrieval import InMemoryRetriever
@@ -26,6 +36,10 @@ from uploaded_agent_store import (
     save_agent,
     validate_agent_bytes,
 )
+
+USE_SANDBOXED_DETECTION = os.getenv("USE_SANDBOXED_DETECTION", "false").lower() == "true"
+
+logger = logging.getLogger(__name__)
 
 
 class TrialDocumentInput(BaseModel):
@@ -45,7 +59,18 @@ class GenerateDocumentsRequest(BaseModel):
     count: int = Field(default=5, ge=3, le=8)
 
 
-def _trial_payload(query: str, result: AgentResult, score: int) -> dict[str, Any]:
+class LLMCompleteRequest(BaseModel):
+    system_prompt: str
+    user_prompt: str
+    temperature: float = 0.0
+
+
+def _trial_payload(
+    query: str,
+    result: AgentResult,
+    score: int,
+    submitted_documents: list[Document] | None = None,
+) -> dict[str, Any]:
     retrieved = result.retrieved_documents
     poisoned_documents = [item.document for item in retrieved if item.document.poisoned]
     injection_tags = list(
@@ -55,25 +80,38 @@ def _trial_payload(query: str, result: AgentResult, score: int) -> dict[str, Any
             if document.injection_technique
         )
     )
+    agent_transcript = {
+        "query": query,
+        "retrieved_documents": [
+            {
+                "id": item.document.id,
+                "title": item.document.title,
+                "content": item.document.content,
+                "similarity_score": item.score,
+                "poisoned": item.document.poisoned,
+                "injection_technique": item.document.injection_technique,
+                "injected_span": item.document.injected_span,
+            }
+            for item in retrieved
+        ],
+        "final_answer": result.answer,
+    }
+    if submitted_documents is not None:
+        agent_transcript["submitted_documents"] = [
+            {
+                "id": doc.id,
+                "title": doc.title,
+                "content": doc.content,
+                "poisoned": doc.poisoned,
+                "injection_technique": doc.injection_technique,
+                "injected_span": doc.injected_span,
+            }
+            for doc in submitted_documents
+        ]
     return {
         "status": "completed",
         "score": score,
-        "agent_transcript": {
-            "query": query,
-            "retrieved_documents": [
-                {
-                    "id": item.document.id,
-                    "title": item.document.title,
-                    "content": item.document.content,
-                    "similarity_score": item.score,
-                    "poisoned": item.document.poisoned,
-                    "injection_technique": item.document.injection_technique,
-                    "injected_span": item.document.injected_span,
-                }
-                for item in retrieved
-            ],
-            "final_answer": result.answer,
-        },
+        "agent_transcript": agent_transcript,
         "injection_tags": injection_tags,
         "document_text": "\n\n---\n\n".join(
             f"{item.document.title}\n\n{item.document.content}" for item in retrieved
@@ -121,7 +159,8 @@ def _aggregate_robustness(run_payloads: list[dict[str, Any]]) -> dict[str, Any]:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    provider = OpenAIProvider()
+    llm_provider_choice = os.getenv("LLM_PROVIDER", "openai").lower()
+    provider = KimiProvider() if llm_provider_choice == "kimi" else OpenAIProvider()
     app.state.store = SupabaseTrialStore()
     app.state.runner = LocalRunner()
     app.state.executor: ParallelExecutor = LocalExecutor()
@@ -130,17 +169,43 @@ async def lifespan(app: FastAPI):
     app.state.generator = DocumentGenerator(provider)
     app.state.detector = InjectionDetector(provider)
     app.state.judge = Judge(provider)
+
+    if USE_SANDBOXED_DETECTION:
+        from daytona_runner import DaytonaRunner
+        app.state.sandbox_runner = DaytonaRunner()
+
     yield
 
 
 app = FastAPI(title="Content Integrity Crash Test", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def detect_document(title: str, content: str):
+    if USE_SANDBOXED_DETECTION:
+        prompt = f"""Document title:
+<document_title>
+{title}
+</document_title>
+
+Document content:
+<document_content>
+{content}
+</document_content>
+
+Classify this document and return the required JSON."""
+        raw_text = app.state.sandbox_runner.run_detection_remote(
+            DETECTOR_SYSTEM_PROMPT, prompt
+        )
+        return InjectionDetector._parse_result(raw_text, content)
+    else:
+        return app.state.detector.detect(title, content)
 
 
 @app.post("/agents/upload")
@@ -172,7 +237,7 @@ async def generate_agent_documents(
     )
     detections = await app.state.executor.execute(
         [
-            lambda document=document: app.state.detector.detect(
+            lambda document=document: detect_document(
                 document["title"],
                 document["content"],
             )
@@ -206,7 +271,7 @@ async def run_rag_trial(request: RunTrialRequest) -> dict[str, Any]:
     runner: SandboxRunner = app.state.runner
     initial_values = {
         "target_ref": "local-rag-agent",
-        "trial_type": request.trial_type or "",
+        "trial_type": "pending",
         "status": "running",
         "score": None,
         "agent_transcript": {"query": request.query},
@@ -224,7 +289,7 @@ async def run_rag_trial(request: RunTrialRequest) -> dict[str, Any]:
     try:
         detections = await app.state.executor.execute(
             [
-                lambda document=document: app.state.detector.detect(
+                lambda document=document: detect_document(
                     document.title,
                     document.content,
                 )
@@ -243,11 +308,26 @@ async def run_rag_trial(request: RunTrialRequest) -> dict[str, Any]:
             )
             for document, detection in zip(request.documents, detections, strict=True)
         ]
-        retriever = await asyncio.to_thread(
-            InMemoryRetriever,
-            uploaded_documents,
-            client=app.state.provider.client,
+        detected_techniques = list(
+            dict.fromkeys(
+                document.injection_technique
+                for document in uploaded_documents
+                if document.poisoned and document.injection_technique
+            )
         )
+        embedding_backend = os.getenv("EMBEDDING_BACKEND", "openai").lower()
+        if embedding_backend == "local":
+            from local_retrieval import LocalInMemoryRetriever
+            retriever = await asyncio.to_thread(
+                LocalInMemoryRetriever,
+                uploaded_documents,
+            )
+        else:
+            retriever = await asyncio.to_thread(
+                InMemoryRetriever,
+                uploaded_documents,
+                client=app.state.provider.client,
+            )
         agent = TargetAgent(app.state.provider, retriever)
 
         def pipeline() -> dict[str, Any]:
@@ -281,14 +361,13 @@ async def run_rag_trial(request: RunTrialRequest) -> dict[str, Any]:
                 agent_result.retrieved_documents,
                 agent_result.answer,
             )
-            payload = _trial_payload(request.query, agent_result, judgment.score)
-            payload["injection_tags"] = list(
-                dict.fromkeys(
-                    document.injection_technique
-                    for document in uploaded_documents
-                    if document.poisoned and document.injection_technique
-                )
+            payload = _trial_payload(
+                request.query,
+                agent_result,
+                judgment.score,
+                uploaded_documents,
             )
+            payload["injection_tags"] = detected_techniques
             payload["agent_transcript"]["judge"] = {
                 "score": judgment.score,
                 "hijacked": judgment.hijacked,
@@ -311,8 +390,12 @@ async def run_rag_trial(request: RunTrialRequest) -> dict[str, Any]:
                 [lambda: runner.run(pipeline) for _ in range(request.runs)]
             )
             completed_values = _aggregate_robustness(run_payloads)
+        completed_values["trial_type"] = (
+            ", ".join(detected_techniques) if detected_techniques else "clean"
+        )
         return await asyncio.to_thread(store.update_trial, trial_id, completed_values)
-    except Exception:
+    except Exception as exc:
+        logger.exception("Trial %s failed: %r", trial_id, exc)
         failed_row = await asyncio.to_thread(store.mark_failed, trial_id)
         if failed_row is not None:
             return failed_row
@@ -338,4 +421,20 @@ def get_rag_trial(trial_id: str) -> dict[str, Any]:
     if trial is None:
         raise HTTPException(status_code=404, detail=f"Trial '{trial_id}' not found")
     return trial
+
+
+@app.post("/internal/llm-complete")
+async def internal_llm_complete(request: LLMCompleteRequest) -> dict[str, Any]:
+    try:
+        # Run provider completion in a thread to avoid blocking
+        raw_text = await asyncio.to_thread(
+            app.state.provider.complete,
+            system_prompt=request.system_prompt,
+            user_prompt=request.user_prompt,
+            temperature=request.temperature
+        )
+        return {"content": raw_text}
+    except Exception as exc:
+        logger.exception("Internal LLM complete failed: %r", exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 

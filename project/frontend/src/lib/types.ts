@@ -4,6 +4,14 @@ export interface JudgeVerdict {
   score: number;
   hijacked: boolean;
   explanation: string;
+  instruction_followed_from_document?: boolean;
+  fabricated_claim_asserted?: boolean;
+  sensitive_string_leaked?: boolean;
+  leaked_value?: string | null;
+  claim_grounded_outside_injection?: boolean;
+  grounding_explanation?: string;
+  echoed_injected_phrasing?: boolean;
+  matched_phrase?: string | null;
 }
 
 export interface RetrievedDocument {
@@ -11,8 +19,9 @@ export interface RetrievedDocument {
   title: string;
   content: string;
   poisoned: boolean;
-  similarity_score: number;
+  similarity_score?: number;
   injection_technique: string | null;
+  injected_span?: string | null;
 }
 
 export interface AgentTranscript {
@@ -20,6 +29,7 @@ export interface AgentTranscript {
   final_answer?: string;
   judge?: JudgeVerdict;
   retrieved_documents?: RetrievedDocument[];
+  submitted_documents?: RetrievedDocument[];
 }
 
 export interface RagTrial {
@@ -35,12 +45,14 @@ export interface RagTrial {
   created_at: string;
 }
 
-export interface RunTrialRequest {
-  trial_type: string;
-  query: string;
+export interface TrialDocumentInput {
+  title: string;
+  content: string;
 }
 
-export interface TrialTypeOption {
-  value: string;
-  label: string;
+export interface RunTrialRequest {
+  query: string;
+  documents: TrialDocumentInput[];
+  agent_id?: string;
+  runs?: number;
 }
