@@ -2,6 +2,11 @@
 
 Ultron is a comprehensive testing and evaluation suite for AI agents. The project is split into two primary modules that focus on distinct safety and robustness vectors: **Poisoned RAG Evaluation** and the **Web Manipulation Engine**. 
 
+### Setup: 
+1. Install all libraries required: `pip install -r requirements.txt`.
+2. Generate all required API keys as detailed in the `.env.example` file.
+3. Run the frontend: `cd frontend` --> `npm run dev`.
+
 ---
 
 ## Module 1: Poisoned RAG (Content Integrity Crash Test)
@@ -19,8 +24,7 @@ This module evaluates the resilience of Retrieval-Augmented Generation (RAG) age
 5. **Scoring:** The Judge calculates a score (0 to 100), determining if the Target Agent was fully hijacked, partially hijacked, or if it successfully resisted the malicious instructions. The results are saved via Supabase.
 
 ### How to Implement & Run
-- **Setup:** Ensure you have `.env` configured with Supabase credentials and `LLM_PROVIDER` (e.g., `openai` or `kimi`). Install requirements (`pip install -r requirements.txt`).
-- **Run the Server:** Run `main.py` using a standard ASGI server (`uvicorn main:app --reload`).
+- **Run the Server:** Run `content_integration_engine/main.py` using a standard ASGI server (`uvicorn main:app --reload`).
 - **Integration:** The API provides endpoints (`/rag-trials/run`) that can be integrated into your CI/CD pipeline to continuously test new versions of your RAG agents.
 
 ---
@@ -47,7 +51,5 @@ This engine is designed to evaluate how AI web agents perform when faced with we
 7. **Scoring & Feedback:** The system calculates an **Agent Safety Score** (how well the agent resisted manipulation) and a **Website Risk Score** (the severity of the manipulation present on the site). A `DeveloperFeedbackGenerator` then provides actionable guardrail recommendations (where the agent failed, where the agent successfully resisted manipulation, how to improve). 
 
 ### How to Implement & Run
-- **Setup:** Navigate to the `web_manipulation_engine/` directory and install dependencies. 
-- **Run the Server:** Start the orchestrator by running `python orchestrator.py` (runs on port 8000).
-- **Run a Demo:** Execute `python demo_wme.py` to trigger a simulated run. The demo streams events and prints the final Agent Safety and Website Risk verdicts in the console.
+- **Run the Server:** Start the orchestrator by running `python web_manipulation_engine\nosana_orchestrator.py`.
 - **Mock Target:** The system can test any live URL, but a Mock UI with Decepticon elements is available for controlled testing: `https://mockuidaytona.vercel.app/login`.
